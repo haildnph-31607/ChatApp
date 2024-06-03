@@ -26,3 +26,16 @@ Broadcast::channel('chat', function ($user) {
         return false;
     }
 });
+Broadcast::channel('users', function ($user) {
+   return $user != null;
+});#endregion
+
+Broadcast::channel('ChatSolution.{user}.{userRevice}', function ($user,$userSend,$userRevice) {
+   if($user != null){
+        if($user->id == $userSend || $user->id == $userRevice){
+            return true;
+        }
+   }
+   return false;
+ });
+

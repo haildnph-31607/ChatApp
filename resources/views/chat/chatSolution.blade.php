@@ -53,19 +53,26 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="row">
-                    @foreach ($users as $item)
-                        <div class="col-md-12 ">
-                            <a href="{{ route('chatSolution',$item->id) }}" class="item" id="link_{{ $item->id }}">
+
+                        <div class="col-md-12 sm-none ">
+                            <a href="{{ route('profileView',Auth::user()->id) }}" class="item" id="link_{{ Auth::user()->id }}">
                                 {{-- <div class="status"></div> --}}
-                                <img src="{{ $item->avatar }}" alt="">
-                                <p>{{ $item->name }}</p>
+                                <img src="{{ Auth::user()->avatar }}" alt="">
+                                <p>{{ Auth::user()->name }}</p>
                             </a>
                         </div>
-                    @endforeach
+
                 </div>
             </div>
             <div class="col-md-9">
-                <ul class="blockchat">
+                <div class="col-md-12 ">
+                    <a href="{{ route('chatSolution',$user->id) }}" class="item" id="link_{{ $user->id }}">
+                        {{-- <div class="status"></div> --}}
+                        <img src="{{ $user->avatar }}" alt="">
+                        <p>{{ $user->name }}</p>
+                    </a>
+                </div>
+                <ul class="blockchat" id="message">
 
                 </ul>
                 <form>
@@ -115,20 +122,6 @@
                     onl.removeChild(ElementRemote);
                 }
 
-            }).listen('UserOnlined' ,event=>{
-                // console.log(event);
-                let blockChat = document.querySelector('.blockchat');
-                let elementChat = document.createElement('li');
-                elementChat.textContent= `${event.user.name} : ${event.message}`;
-                if(event.user.id== "{{ Auth::user()->id }}"){
-                 elementChat.classList.add('my-Messgae');
-                elementChat.innerHTML= `${event.message} : ${event.user.name}`;
-
-                }else{
-                    elementChat.textContent= `${event.user.name} : ${event.message}`;
-
-                }
-                blockChat.appendChild(elementChat);
             })
 
         let inputChat = document.querySelector('#inputChat')
@@ -136,13 +129,36 @@
         btnSend.addEventListener('click', function(e) {
             e.preventDefault();
             //    console.log(1);
-            axios.post('{{ route('send') }}', {
+            axios.post('{{ route('Message',$user->id) }}', {
                 'message': inputChat.value
             }).then(data => {
-                console.log(data.data);
+                // console.log(data.data);
                 inputChat.value = ''
             })
 
         })
+
+    </script>
+    <script type="module">
+         Echo.private(`ChatSolution.{{ Auth::user()->id }}.{{ $user->id }}`)
+         .listen('ChatSolution', event=>{
+           console.log(event);
+           let message = document.querySelector('#message')
+           let items = document.createElement('li');
+           items.textContent = `${ event.userSend.name} : ${event.message}`;
+        //    items.classList.add('my-Messgae')
+           message.appendChild(items)
+         })
+
+         Echo.private('ChatSolution.{{ $user->id }}.{{ Auth::user()->id }}')
+         .listen('ChatSolution', event=>{
+           console.log(event);
+           let message = document.querySelector('#message')
+           let items = document.createElement('li');
+           items.textContent = `${event.message} : ${ event.userSend.name} `;
+           items.classList.add('my-Messgae')
+           message.appendChild(items)
+         })
     </script>
 @endsection
+
